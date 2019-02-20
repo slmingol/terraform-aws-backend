@@ -12,8 +12,9 @@
  */
 
 output "s3_backend_bucket_name" {
-  value = "${ join("", aws_s3_bucket.tf_backend_bucket.*.id, aws_s3_bucket.tf_backend_bucket.*.id)}"
-}
+  #value = "${ join("", aws_s3_bucket.tf_backend_bucket.*.id, aws_s3_bucket.tf_backend_bucket.*.id)}"
+  value = "${aws_s3_bucket.tf_backend_bucket.*.id}"
+  }
 
 output "dynamodb_lock_table_name" {
   value = "${aws_dynamodb_table.tf_backend_state_lock_table.*.id}"
