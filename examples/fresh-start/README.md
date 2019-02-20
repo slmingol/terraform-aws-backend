@@ -17,3 +17,5 @@ $ terraform init -reconfigure -backend-config=conf.tfvars
 # Now 'show' should show your terraform backend resource attributes
 $ terraform show
 ```
+
+**NOTE:** Be sure to change the name of the `backend_bucket=XXXX` otherwise your bucket creation will fail due to the name above already being used by the original author.
