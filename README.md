@@ -206,4 +206,17 @@ See variables available for module configuration
 
 https://github.com/samstav/terraform-aws-backend/blob/master/variables.tf
 
+### S3 Block Public Access
+AWS recently added a new feature to S3 buckets to mitigate access to them from the public. To improve the security associated with the 2 buckets created by this module, we've opted to enable these as follows using the `aws_s3_bucket_public_access_block` module.
 
+```
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+```
+
+These default to `true` and cannot be disabled through any switches provided by this module. For more of this see the following resources:
+
+* [aws_s3_bucket_public_access_block](https://www.terraform.io/docs/providers/aws/r/s3_bucket_public_access_block.html)
+* [Amazon S3 Block Public Access – Another Layer of Protection for Your Accounts and Buckets](https://aws.amazon.com/blogs/aws/amazon-s3-block-public-access-another-layer-of-protection-for-your-accounts-and-buckets/)

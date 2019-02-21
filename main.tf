@@ -10,6 +10,7 @@
  *   - An S3 Bucket for storing terraform state
  *   - An S3 Bucket for storing logs from the state bucket
  *   - A DynamoDB table to be used for state locking and consistency
+ *   - Restricts public access to both the state & log buckets
  *
  * The DynamoDB state locking table is optional: to disable,
  * set the 'dynamodb_lock_table_enabled' variable to false.
@@ -35,6 +36,10 @@ terraform {
 
 data "aws_caller_identity" "current" {}
 
+#################################
+### TF Backend DynamoDB
+#################################
+
 resource "aws_dynamodb_table" "tf_backend_state_lock_table" {
   count = "${var.dynamodb_lock_table_enabled ? 1 : 0}"
   name           = "${var.dynamodb_lock_table_name}"
@@ -57,8 +62,11 @@ resource "aws_dynamodb_table" "tf_backend_state_lock_table" {
   lifecycle {
     prevent_destroy = true
   }
-
 }
+
+#################################
+### TF Backend state file bucket
+#################################
 
 resource "aws_s3_bucket" "tf_backend_bucket" {
   bucket = "${var.backend_bucket}"
@@ -86,6 +94,14 @@ resource "aws_s3_bucket" "tf_backend_bucket" {
   lifecycle {
     prevent_destroy = true
   }
+}
+
+resource "aws_s3_bucket_public_access_block" "tf_backend_bucket" {
+  bucket                  = "${aws_s3_bucket.tf_backend_bucket.id}"
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
 }
 
 data "aws_iam_policy_document" "tf_backend_bucket_policy" {
@@ -134,11 +150,14 @@ data "aws_iam_policy_document" "tf_backend_bucket_policy" {
   }
 }
 
-
 resource "aws_s3_bucket_policy" "tf_backend_bucket_policy" {
   bucket = "${aws_s3_bucket.tf_backend_bucket.id}"
   policy = "${data.aws_iam_policy_document.tf_backend_bucket_policy.json}"
 }
+
+#################################
+### TF Backend logs bucket
+#################################
 
 resource "aws_s3_bucket" "tf_backend_logs_bucket" {
   bucket = "${var.backend_bucket}-logs"
@@ -154,4 +173,12 @@ resource "aws_s3_bucket" "tf_backend_logs_bucket" {
   lifecycle {
     prevent_destroy = true
   }
+}
+
+resource "aws_s3_bucket_public_access_block" "tf_backend_logs_bucket" {
+  bucket                  = "${aws_s3_bucket.tf_backend_logs_bucket.id}"
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
 }
